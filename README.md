@@ -144,27 +144,57 @@ def check_overlap(pos1, pos2, radius, same_fiber):
                                         random.randint(sphere_radius, box_width - sphere_radius),
                                         random.randint(sphere_radius, box_thickness - sphere_radius)]])
 ```
-### Handling bead overlay
-> While generated bead overlay existing one, some new random position is generated for that bead.
+### Adding atomic symbols and fiber index to generated bead
 ```
-        # Collision detection for the first bead of each fiber
-        while any(check_overlap(fiber_positions[0], np.array([x_positions[i], y_positions[i], z_positions[i]]), sphere_radius, fiber_indices[i] == fiber_index) for i in range(len(x_positions))):
-            
-            # Generate random position for the first bead in the fiber
-            fiber_positions = np.array([[random.randint(sphere_radius, box_length - sphere_radius),
-                                        random.randint(sphere_radius, box_width - sphere_radius),
-                                        random.randint(sphere_radius, box_thickness - sphere_radius)]])
+        # Append atomic symbol "C" to the global atomic symbols array
+        atomic_symbols = ["C"]
+
+        # Add fiber number
+        fiber_index += 1
 ```
+### Generating second bead of the fiber
+> In current script, second bead defines directionality, in which fiber will be continuing to generate. Thus, it is randomly done by defining one of 3! possible directions in 3D (east, west, north, south, top, bottom) by calling direction_x, direction_y and direction_z lines. Further on, random_angle_theta and random_angle_phi defines some random bead displacement in spherical coordinates (Figure 1) for chosen direction. Defined theta and phi angles allow to calculate bead offset, which further allows to define bead position.
+        # Generate second bead of the fiber
+        for bead_number in range(2):  # Change the range to generate two beads
 
+            # Generate fiber directionality as a direction in x, y, and z coordinates
+            direction_x = 2 * np.random.randint(2) - 1  # Randomly select -1 or 1
+            direction_y = 2 * np.random.randint(2) - 1  # Randomly select -1 or 1
+            direction_z = 2 * np.random.randint(2) - 1  # Randomly select -1 or 1
 
+            # For the second bead, generate some random displacement is spheric coordinates
+            random_angle_theta = np.deg2rad(np.random.randint(0, 180))
+            random_angle_phi = np.deg2rad(np.random.randint(0, 360))
 
+            # Calculate second bead offset in 3D
+            x_offset = sphere_radius * np.sin(random_angle_theta) * np.cos(random_angle_phi)
+            y_offset = sphere_radius * np.sin(random_angle_theta) * np.sin(random_angle_phi)
+            z_offset = sphere_radius * np.cos(random_angle_theta)
 
-
-
-
-
-Figure representing the logics of bead generation in terms of spherical coordinate system.
+            # Define position of the second bead
+            bead_position = np.array([fiber_positions[-1, 0] + direction_x * x_offset,
+                                      fiber_positions[-1, 1] + direction_y * y_offset,
+                                      fiber_positions[-1, 2] + direction_z * z_offset])
+```
+Figure 1. Figure representing the logics of bead generation in terms of spherical coordinate system.
 ![Figure 8](https://github.com/vchibrikov/STFGEN/assets/98614057/f0aae5da-48e9-4d87-8651-e2b786281d79)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Figure of randomly generated first bead of each fiber at 5% volume occupation of fibers, with beads of the radius of 25 units. X-Y axis view.
