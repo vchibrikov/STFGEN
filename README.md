@@ -220,7 +220,31 @@ Figure of randomly generated first bead of each fiber at 5% volume occupation of
 
             print(f'Added bead {str(bead_number + 1).zfill(5)} of {n_beads} for fiber {fiber_index} of {len(random_fiber_length)}. Volume occupied: {round(volume_occupied * 100 / (box_length * box_thickness * box_width), 5)}%')
 ```
+### Generating beads from the third till fiber end
+> Current block of code allows for further bead generation in predefined direction. For each bead, displacement is defined by some random value of angle displacements random_angle_theta and random_angle_phi, which correspond to the one, defined earlier, yet modified by some random value of angle displacements random_angle_theta_modifier and random_angle_phi_modifier.
+```
+        # For each fiber, generate beads from the third to the end of the fiber length
+        for bead_number in range(3, round((n_beads + 1) * 1), 1):
 
+            for _ in range(1):
+
+                # For other beads, generate random displacement is spheric coordinates
+                random_angle_theta_modifier = np.deg2rad(np.random.randint(-bead_bead_angle_sd, bead_bead_angle_sd))
+                random_angle_phi_modifier = np.deg2rad(np.random.randint(-bead_bead_angle_sd, bead_bead_angle_sd))
+
+            random_angle_theta += random_angle_theta_modifier
+            random_angle_phi += random_angle_phi_modifier
+
+            # Convert spherical coordinates to Cartesian coordinates with random signs
+            x_offset = sphere_radius * np.sin(random_angle_theta) * np.cos(random_angle_phi)
+            y_offset = sphere_radius * np.sin(random_angle_theta) * np.sin(random_angle_phi)
+            z_offset = sphere_radius * np.cos(random_angle_theta)
+
+            # Define bead position according to the previous bead(s), their directionality and calculated displacement
+            bead_position = np.array([fiber_positions[-1, 0] + x_offset * direction_x,
+                                    fiber_positions[-1, 1] + y_offset * direction_y,
+                                    fiber_positions[-1, 2] + z_offset * direction_z])
+```
 
 
 
