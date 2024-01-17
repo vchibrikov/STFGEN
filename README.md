@@ -18,7 +18,7 @@ import os
 from datetime import datetime
  ```
 ### Defining date and time 
-> Here, it is done for the purpose of proper naming convention of output files
+> Here, it is done for the purpose of proper naming convention of output files.
 ```
 # Get the current date and time
 current_date = datetime.now().strftime('%H.%M.%S_%d.%m.%Y')
@@ -38,7 +38,7 @@ output_xyz_filename = ['STFGEN', '_', current_date, '_NETWORK_VC.xyz']
 output_xyz_filename = ''.join(output_xyz_filename)
 ```
 ### Defining input variables
-> Make sure to modify this segment prior to the code use
+> Make sure to modify this segment prior to the code use.
 ```
 # Define variables
 box_length = # Length of simulation box
@@ -79,7 +79,7 @@ y_positions = []
 z_positions = []
 fiber_indices = []
 ```
-### Define function to check overlay of the beads of different values
+### Defining function to check overlay of the beads of different values
 > Current script allows overlay of the beads of the same fiber, assuming it as an interbead junction. However, bead overlay of the different fibers if restricted, so that the minimum distance between the beads of different fibers equals to two radii and some cutoff distance. Cutoff distance defines closes distance between the bead edges.
 ```
 # Function to check beads of different fibers overlap
@@ -91,6 +91,77 @@ def check_overlap(pos1, pos2, radius, same_fiber):
         return distance < radius * 2 + cutoff_distance # Interfiber bead overlay restricted
         # return distance < 0 # Allow bead overlay
 ```
+### While loop for bead and fiber generating up to some volume of the simulation box to be occupied
+```
+# Generate fiber network until desired volume is occupied
+while volume_occupied < max_volume_occupied:
+    print(f'Starting generation for volume occupied: {volume_occupied}')
+```
+### Defining function to check overlay of the beads of different values
+> Current script allows overlay of the beads of the same fiber, assuming it as an interbead junction. However, bead overlay of the different fibers if restricted, so that the minimum distance between the beads of different fibers equals to two radii and some cutoff distance. Cutoff distance defines closes distance between the bead edges. To allow bead overlay, use return command in commented line.
+```
+# Function to check beads of different fibers overlap
+def check_overlap(pos1, pos2, radius, same_fiber):
+    if same_fiber:
+        return False  # Allow overlap for the same fiber
+    else:
+        distance = np.linalg.norm(pos1 - pos2)
+        return distance < radius * 2 + cutoff_distance # Interfiber bead overlay restricted
+        # return distance < 0 # Allow bead overlay
+```
+### Starting fiber generation
+> Current block takes the fiber length from a previously generated array, calculates beads number within a fiber, and defines some random position in 3D for the first bead.
+```
+    # Start generate beads of each fiber within array of fiber length
+    for fiber_length in random_fiber_length:
+
+        # Define number of beads in each fiber
+        n_beads = int(fiber_length / sphere_radius) 
+
+        # Generate random position for the first bead in the fiber
+        fiber_positions = np.array([[random.randint(sphere_radius, box_length - sphere_radius),
+                                     random.randint(sphere_radius, box_width - sphere_radius),
+                                     random.randint(sphere_radius, box_thickness - sphere_radius)]])
+```
+### Defining bead within the boundaries of simulation box
+> Current block assume first bead should be located within the simulation box.
+```
+        if (fiber_positions < sphere_radius).any() or (fiber_positions > box_length - sphere_radius).any():
+
+            # Generate random position for the first bead in the fiber
+            fiber_positions = np.array([[random.randint(sphere_radius, box_length - sphere_radius),
+                                        random.randint(sphere_radius, box_width - sphere_radius),
+                                        random.randint(sphere_radius, box_thickness - sphere_radius)]])
+```
+### Handling bead overlay
+> While generated bead overlay existing one, some new random position is generated for that bead.
+```
+        # Collision detection for the first bead of each fiber
+        while any(check_overlap(fiber_positions[0], np.array([x_positions[i], y_positions[i], z_positions[i]]), sphere_radius, fiber_indices[i] == fiber_index) for i in range(len(x_positions))):
+            
+            # Generate random position for the first bead in the fiber
+            fiber_positions = np.array([[random.randint(sphere_radius, box_length - sphere_radius),
+                                        random.randint(sphere_radius, box_width - sphere_radius),
+                                        random.randint(sphere_radius, box_thickness - sphere_radius)]])
+```
+### Handling bead overlay
+> While generated bead overlay existing one, some new random position is generated for that bead.
+```
+        # Collision detection for the first bead of each fiber
+        while any(check_overlap(fiber_positions[0], np.array([x_positions[i], y_positions[i], z_positions[i]]), sphere_radius, fiber_indices[i] == fiber_index) for i in range(len(x_positions))):
+            
+            # Generate random position for the first bead in the fiber
+            fiber_positions = np.array([[random.randint(sphere_radius, box_length - sphere_radius),
+                                        random.randint(sphere_radius, box_width - sphere_radius),
+                                        random.randint(sphere_radius, box_thickness - sphere_radius)]])
+```
+
+
+
+
+
+
+
 
 Figure representing the logics of bead generation in terms of spherical coordinate system.
 ![Figure 8](https://github.com/vchibrikov/STFGEN/assets/98614057/f0aae5da-48e9-4d87-8651-e2b786281d79)
