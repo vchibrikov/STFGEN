@@ -6,6 +6,14 @@ STFGEN (Single-Type Fiber GENerator) is a hardcoded Python script for the genera
 
 > Warning! There are no guaranties that this software will run on your machine.
 
+
+
+
+Figure of randomly generated first bead of each fiber at 5% volume occupation of fibers, with beads of the radius of 25 units. X-Y axis view.
+![Figure 7](https://github.com/vchibrikov/STFGEN/assets/98614057/0086d7cb-f772-470b-b687-f02e4423e7dd)
+
+
+
 Figure of randomly generated fiber networks at 1% volume occupation with beads of the radius of 25 units. X-Y axis view.
 ![Figure 1](https://github.com/vchibrikov/STFGEN/assets/98614057/b81a64a0-bb66-4b5e-a116-083f0e4dafe2)
 
