@@ -7,12 +7,12 @@ STFGEN (Single-Type Fiber GENerator) is a hardcoded Python script for the genera
 > Warning! There are no guaranties that this software will run on your machine.
 
 
+Figure representing the logics of bead generation in terms of spherical coordinate system.
+![Figure 8](https://github.com/vchibrikov/STFGEN/assets/98614057/f0aae5da-48e9-4d87-8651-e2b786281d79)
 
 
 Figure of randomly generated first bead of each fiber at 5% volume occupation of fibers, with beads of the radius of 25 units. X-Y axis view.
 ![Figure 7](https://github.com/vchibrikov/STFGEN/assets/98614057/0086d7cb-f772-470b-b687-f02e4423e7dd)
-
-
 
 Figure of randomly generated fiber networks at 1% volume occupation with beads of the radius of 25 units. X-Y axis view.
 ![Figure 1](https://github.com/vchibrikov/STFGEN/assets/98614057/b81a64a0-bb66-4b5e-a116-083f0e4dafe2)
@@ -32,7 +32,9 @@ Figure of randomly generated fiber networks at 5% volume occupation with beads o
 Figure of randomly generated fiber networks at 5% volume occupation with beads of the radius of 25 units. Z-Y axis view.
 ![Figure 6](https://github.com/vchibrikov/STFGEN/assets/98614057/230dc2e0-0345-470c-8f09-229d60381e0e)
 
-
+> Limitations:
+> 1. It is recommended to generate fiber network, in which bead radius is no more than 1% of the length of simulation box
+> 2. Despite parameters of the simulation box are provided, current script does allow generated fibers to run over the box boundaries. The volume of the beads that run over the boundaries of simulation box are not considere in current script.
 
 
 
