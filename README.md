@@ -467,7 +467,7 @@ Fig. 14. Y-Z axis view.
 
 
 ### Limitations
-* It is recommended and suggested to generate fiber network, in which bead radius is up to 1% of the minimum input box parameter (length, width, thickness), while the maximum fiber length does not exceed 20% of the of the minimum input box parameter (length, width, thickness).* At some boundary conditions (too small simulation box, too long fibers, too big bead radius), angle displacement values may allow for the generation of sharp interbead angles, appearing as fiber kink in macroscale.
+It is recommended and suggested to generate fiber network, in which bead radius is up to 1% of the minimum input box parameter (length, width, thickness), while the maximum fiber length does not exceed 20% of the of the minimum input box parameter (length, width, thickness).* At some boundary conditions (too small simulation box, too long fibers, too big bead radius), angle displacement values may allow for the generation of sharp interbead angles, appearing as fiber kink in macroscale.
 
 
 
