@@ -307,23 +307,15 @@ Fig. 2 Randomly generated first and second beads of each fiber at 5% volume occu
 ```
 ### Plot output structure in Python (optionally)
 ```
-### Technical block - defining atomic symbol, adding position of the second bead to the general list, fiber index, calculating occupied volume and printind respected message
-        # Append the bead position to the global position arrays
-        x_positions.append(bead_position[0])
-        y_positions.append(bead_position[1])
-        z_positions.append(bead_position[2])
-
-        # Append the fiber index to the fiber_indices array
-        fiber_indices.append(fiber_index)
-
-        # Append the bead position to the fiber_positions array
-        fiber_positions = np.vstack([fiber_positions, bead_position])
-
-        # Calculate the volume occupied by the generated beads
-        volume_occupied = (bead_volume * len(x_positions)) - ((bead_volume * bead_bead_overlay_ratio) * (len(x_positions) - fiber_index))
-
-	# Print terminal statement on code processing
-        print(f'Added bead {str(bead_number).zfill(5)} of {n_beads} for fiber {fiber_index} of {len(random_fiber_length)}. Volume occupied: {round(volume_occupied * 100 / (box_length * box_thickness * box_width), 5)}%')
+# Plot the 3D structure (optional)
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection = '3d')
+# ax.scatter(x_positions, y_positions, z_positions, c = 'b', marker = 'o', s = sphere_radius / 2)
+# ax.set_xlabel('X')
+# ax.set_ylabel('Y')
+# ax.set_zlabel('Z')
+# Show the plot
+# plt.show()
 ```
 ### Write output coordinates to .xyz file
 > Current block of code defines filename and filepath for an output .xyz file, write the number of the beads simulated, its coordinates, and fiber number. Note - each single value of bead coordinate is divided by bead radius for nicer visual representation of the fiber structure in Blender.
@@ -402,36 +394,70 @@ with open(output_length_filepath, 'w') as txt_file:
 print(f'Length saved to {output_length_filepath}')
 ```
 ### Examples
+Fig. 3-5. Randomly generated fiber networks at:
+* 2% volume occupation;
+* 5 units bead radius;
+* 50±5 units fiber length;
+* 300 * 300 * 300 cubic units of simulation box;
+* 1 units cutoff distance;
+* 0±5 degrees of bead-bead displacement. 
+
+Fig. 3. X-Y axis view.
+
+Fig. 4. X-Z axis view.
+
+Fig. 5. Y-Z axis view.
 
 
+Fig. 6-8. Randomly generated fiber networks at:
+* 5% volume occupation;
+* 5 units bead radius;
+* 50±5 units fiber length;
+* 300 * 300 * 300 cubic units of simulation box;
+* 1 units cutoff distance;
+* 0±5 degrees of bead-bead displacement. 
+
+Fig. 6. X-Y axis view.
+
+Fig. 7. X-Z axis view.
+
+Fig. 8. Y-Z axis view.
 
 
+Fig. 9-11. Randomly generated fiber networks at:
+* 10% volume occupation;
+* 5 units bead radius;
+* 50±5 units fiber length;
+* 300 * 300 * 300 cubic units of simulation box;
+* 1 units cutoff distance;
+* 0±5 degrees of bead-bead displacement. 
+
+Fig. 9. X-Y axis view.
+
+Fig. 10. X-Z axis view.
+
+Fig. 11. Y-Z axis view.
 
 
+Fig. 12-14. Randomly generated fiber networks at:
+* 20% volume occupation;
+* 5 units bead radius;
+* 50±5 units fiber length;
+* 300 * 300 * 300 cubic units of simulation box;
+* 1 units cutoff distance;
+* 0±5 degrees of bead-bead displacement. 
+
+Fig. 12. X-Y axis view.
+
+Fig. 13. X-Z axis view.
+
+Fig. 14. Y-Z axis view.
 
 
+# Limitations:
+> It is recommended and suggested to generate fiber network, in which bead radius is up to 1% of the minimum input box parameter (length, width, thickness), while the maximum fiber length does not exceed 20% of the of the minimum input box parameter (length, width, thickness).
+> At some boundary conditions (too small simulation box, too long fibers, too big bead radius), angle displacement values may allow for the generation of sharp interbead angles, appearing as fiber kink in macroscale.
 
-Fig. 3 Randomly generated fiber networks at 1% volume occupation with beads of the radius of 25 units. X-Y axis view.
-![Figure 1](https://github.com/vchibrikov/STFGEN/assets/98614057/b81a64a0-bb66-4b5e-a116-083f0e4dafe2)
-
-Figure of randomly generated fiber networks at 1% volume occupation with beads of the radius of 25 units. X-Z axis view.
-![Figure_2](https://github.com/vchibrikov/STFGEN/assets/98614057/f374494a-84d3-4160-be29-0d11c051be39)
-
-Figure of randomly generated fiber networks at 1% volume occupation with beads of the radius of 25 units. Y-Z axis view.
-![Figure 3](https://github.com/vchibrikov/STFGEN/assets/98614057/fc560869-99dd-4530-af24-135e04064374)
-
-Figure of randomly generated fiber networks at 5% volume occupation with beads of the radius of 25 units. X-Y axis view.
-![Figure 4](https://github.com/vchibrikov/STFGEN/assets/98614057/7a9df709-bd09-443b-a548-ea7fc96eff2a)
-
-Figure of randomly generated fiber networks at 5% volume occupation with beads of the radius of 25 units. Z-X axis view.
-![Figure 5](https://github.com/vchibrikov/STFGEN/assets/98614057/8dfeb2c4-0a9b-4f87-b992-b6ef63faab42)
-
-Figure of randomly generated fiber networks at 5% volume occupation with beads of the radius of 25 units. Z-Y axis view.
-![Figure 6](https://github.com/vchibrikov/STFGEN/assets/98614057/230dc2e0-0345-470c-8f09-229d60381e0e)
-
-> Limitations:
-> 1. It is recommended to generate fiber network, in which bead radius is no more than 1% of the length of simulation box
-> 2. Despite parameters of the simulation box are provided, current script does allow generated fibers to run over the box boundaries. The volume of the beads that run over the boundaries of simulation box are not considere in current script.
 
 
 
