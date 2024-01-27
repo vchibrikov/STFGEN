@@ -1,4 +1,4 @@
-# STFGEN.py
+# STFGEN
 STFGEN (Single-Type Fiber GENerator) is a hardcoded Python script for the generation of random fiber network according to input parameters. Current script allow to adjust input data on fiber structural (number of fibers, its length range, diameter, angle displacement, etc.) and spatial (volume occupation) properties. and provide output data of 3D bead coordinates in .xyz file format, as well as output information on generator run in .txt file format. 
 Current repositorium consists of two Python scripts - STFGEN_O.py, which allows to generate fiber network with no bead overlays, and STFGEN_N.py, which do the same but do not handle bead overlay issues. Both codes are pretty much comparable, so that the description below is given for the STFGEN_O.py script, being also sencefull for the STFGEN_N.py one.
 
