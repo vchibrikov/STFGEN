@@ -1,5 +1,6 @@
 # STFGEN.py
-STFGEN (Single-Type Fiber GENerator) is a hardcoded Python script for the generation of random fiber network according to input parameters. Current script allow to adjust input data on fiber structural (number of fibers, its length range, diameter, angle displacement, etc.) and spatial (volume occupation) properties. and provide output data of 3D bead coordinates in .xyz file format, as well as output information on generator run in .txt file format. Current repositorium consists of two Python scripts - STFGEN_O.py, which allows to generate fiber network with no bead overlays, and STFGEN_N.py, which do the same but do not handle bead overlay issues.
+STFGEN (Single-Type Fiber GENerator) is a hardcoded Python script for the generation of random fiber network according to input parameters. Current script allow to adjust input data on fiber structural (number of fibers, its length range, diameter, angle displacement, etc.) and spatial (volume occupation) properties. and provide output data of 3D bead coordinates in .xyz file format, as well as output information on generator run in .txt file format. 
+Current repositorium consists of two Python scripts - STFGEN_O.py, which allows to generate fiber network with no bead overlays, and STFGEN_N.py, which do the same but do not handle bead overlay issues. Both codes are pretty much comparable, so that the description below is given for the STFGEN_O.py script, being also sencefull for the STFGEN_N.py one.
 
 - Visual Studio Code version: 1.85.1
 - Python version: 3.7.7.
@@ -307,7 +308,6 @@ Fig. 2 Randomly generated first and second beads of each fiber at 5% volume occu
 ### Plot output structure in Python (optionally)
 ```
 ### Technical block - defining atomic symbol, adding position of the second bead to the general list, fiber index, calculating occupied volume and printind respected message
-```
         # Append the bead position to the global position arrays
         x_positions.append(bead_position[0])
         y_positions.append(bead_position[1])
@@ -325,7 +325,83 @@ Fig. 2 Randomly generated first and second beads of each fiber at 5% volume occu
 	# Print terminal statement on code processing
         print(f'Added bead {str(bead_number).zfill(5)} of {n_beads} for fiber {fiber_index} of {len(random_fiber_length)}. Volume occupied: {round(volume_occupied * 100 / (box_length * box_thickness * box_width), 5)}%')
 ```
+### Write output coordinates to .xyz file
+> Current block of code defines filename and filepath for an output .xyz file, write the number of the beads simulated, its coordinates, and fiber number. Note - each single value of bead coordinate is divided by bead radius for nicer visual representation of the fiber structure in Blender.
 ```
+# Define filepath and filename of a .xyz output file
+output_xyz_filename = ['STFGEN', '_', current_date, '_NETWORK_VC.xyz']
+output_xyz_filename = ''.join(output_xyz_filename)
+output_file_path = os.path.join(output_xyz_folder, output_xyz_filename)
+
+# Write coordinates to an XYZ file
+with open(output_file_path, 'w') as f:
+
+    # Write the total number of atoms as the first line
+    f.write(f'{len(x_positions)}\n')
+
+    # Write header information as the second line (modify this based on Blender's requirements)
+    f.write("STFGEN_0\n")
+    
+    # Write atomic coordinates
+    for i in range(len(x_positions)):
+        f.write(f'C {x_positions[i]/sphere_radius} {y_positions[i]/sphere_radius} {z_positions[i]/sphere_radius} {fiber_indices[i]}\n')
+    
+# Print terminal statement on code processing
+print(f'Coordinates saved to {output_file_path}')
+```
+### Write output statistics
+> Current block of code writes output statistics of bead generation, considering:
+> * simulation supervisor;
+> * theoretical values of box length, box width, box thickness, mean fiber length, standard deviation of fiber length, bead radius, bead volume, bead overlay, bead-bead overlay volume, bead-bead overlay ratio, occupied volume, standard deviation of bead-bead displacement;
+> * experimental values of the number of beads simulated, fibers simulated, occupied volume simulated, mean fiber length simulated and standard deviation of fiber length simulated.
+```
+# Write output statistics
+mean_fiber_length = np.mean(random_fiber_length)
+std_fiber_length = np.std(random_fiber_length)
+
+# Define filepath and filename of an output statistics file
+output_stats_filename = f'STFGEN_{current_date}_STATS_ALL_VC.txt'
+output_stats_filepath = os.path.join(output_stats_folder, output_stats_filename)
+
+# Write output statistics
+with open(output_stats_filepath, 'w') as txt_file:
+    txt_file.write(f'Simulation Supervisor: ____\n')
+    txt_file.write(f'Box length - theoretical: {box_length}\n')
+    txt_file.write(f'Box width - theoretical: {box_width}\n')
+    txt_file.write(f'Box thickness - theoretical: {box_thickness}\n')
+    txt_file.write(f'Mean fiber length - theoretical: {round(fiber_length_mean, 5)}\n')
+    txt_file.write(f'Standard deviation of fiber length - theoretical: {round(fiber_length_sd, 5)}\n')
+    txt_file.write(f'Bead radius - theoretical: {round(sphere_radius, 5)}\n')
+    txt_file.write(f'Bead overlay - theoretical: {round(sphere_overlay, 5)}\n')
+    txt_file.write(f'Bead volume - theoretical: {round((4 / 3) * np.pi * sphere_radius**3, 5)}\n')
+    txt_file.write(f'Bead-bead overlay volume - theoretical: {round(bead_bead_overlay_ratio, 5)}\n')
+    txt_file.write(f'Occupied volume - theoretical: {round(max_volume_occupied, 5)}\n')
+    txt_file.write(f'Standard deviation of bead-bead displacement (radians) - theoretical: {str(bead_bead_angle_sd)}\n')
+    txt_file.write(f'Beads simulated: {len(x_positions)}\n')
+    txt_file.write(f'Fibers simulated: {total_fibers}\n')
+    txt_file.write(f'Occupied volume simulated: {round(volume_occupied / (box_length * box_thickness * box_width), 5)}\n')
+    txt_file.write(f'Mean fiber length simulated: {round(mean_fiber_length, 5)}\n')
+    txt_file.write(f'Standard deviation of fiber length simulated: {round(std_fiber_length, 5)}\n\n')
+
+# Print terminal statement on code processing
+print(f'Information saved to {output_stats_filepath}')
+```
+### Write output fiber length
+```
+# Define filepath and filename of an output fiber length file
+output_length_filename = f'STFGEN_{current_date}_LENGTH_VC.txt'
+output_length_filepath = os.path.join(output_length_folder, output_length_filename)
+
+# Write output fiber length
+with open(output_length_filepath, 'w') as txt_file:
+    txt_file.write('List of fiber lengths:\n')
+    for fiber_length in random_fiber_length:
+        txt_file.write(f'{fiber_length}\n')
+
+# Print terminal statement on code processing
+print(f'Length saved to {output_length_filepath}')
+```
+### Examples
 
 
 
@@ -335,11 +411,7 @@ Fig. 2 Randomly generated first and second beads of each fiber at 5% volume occu
 
 
 
-
-
-
-
-Figure of randomly generated fiber networks at 1% volume occupation with beads of the radius of 25 units. X-Y axis view.
+Fig. 3 Randomly generated fiber networks at 1% volume occupation with beads of the radius of 25 units. X-Y axis view.
 ![Figure 1](https://github.com/vchibrikov/STFGEN/assets/98614057/b81a64a0-bb66-4b5e-a116-083f0e4dafe2)
 
 Figure of randomly generated fiber networks at 1% volume occupation with beads of the radius of 25 units. X-Z axis view.
