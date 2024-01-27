@@ -1,5 +1,5 @@
 # STFGEN.py
-STFGEN (Single-Type Fiber GENerator) is a hardcoded Python script for the generation of random fiber network according to input parameters. Current script allow to adjust input data on fiber structural (number of fibers, its length range, diameter, angle displacement, etc.) and spatial (volume occupation) properties. and provide output data of 3D bead coordinates in .xyz file format, as well as output information on generator run in .txt file format. 
+STFGEN (Single-Type Fiber GENerator) is a hardcoded Python script for the generation of random fiber network according to input parameters. Current script allow to adjust input data on fiber structural (number of fibers, its length range, diameter, angle displacement, etc.) and spatial (volume occupation) properties. and provide output data of 3D bead coordinates in .xyz file format, as well as output information on generator run in .txt file format. Current repositorium consists of two Python scripts - STFGEN_O, which allows to generate fiber network with no bead overlays, and STFGEN_N, which do the same but do not handle bead overlay issues.
 
 - Visual Studio Code version: 1.85.1
 - Python version: 3.7.7.
@@ -27,38 +27,32 @@ current_date = datetime.now().strftime('%H.%M.%S_%d.%m.%Y')
 > Make sure to modify this segment prior to the code use
 ```
 # Define output folders
-output_xyz_folder = ''
-output_stats_folder = ''
-output_length_folder = ''
+output_xyz_folder = '____'
+output_stats_folder = '____'
+output_length_folder = '____'
 ```
-### Defining filename for the output .xyz file
-```
-# Define .xyz filename and output folder
-output_xyz_filename = ['STFGEN', '_', current_date, '_NETWORK_VC.xyz']
-output_xyz_filename = ''.join(output_xyz_filename)
-```
-### Defining input variables
+# Defining input variables
 > Make sure to modify this segment prior to the code use.
 ```
 # Define variables
-box_length = # Length of simulation box
-box_width = # Width of simulation box
-box_thickness = # Thickness of simulation box
-sphere_radius = # Radius of the single bead
-fiber_length_mean = # Mean length of modeled fibers. Experimental value
-fiber_length_sd = # Standard deviation of modeled fibers. Experimental value
-volume_occupied = 0 # Minimum (starting) volume of simulation box occupied (always 0)
-max_volume_occupied = # Maximum volume of simulation box occupied (0 < max_volume_occupied < 1)
-cutoff_distance = # Minimum distance between the beads of two different fibers
+box_length = ___ # Length of simulation box
+box_width = ___ # Width of simulation box
+box_thickness = ___ # Thickness of simulation box
+sphere_radius = ___ # Radius of the single bead
+fiber_length_mean = ___ # Mean length of modeled fibers. Experimental value
+fiber_length_sd = ___ # Standard deviation of modeled fibers. Experimental value
+volume_occupied = 0 # Minimum (starting) volume of simulation box occupied (a.u.)
+max_volume_occupied = ___ # Maximum volume of simulation box occupied (a.u.)
+cutoff_distance = ___ # Minimum distance between the beads of two different fibers
 sphere_overlay = sphere_radius # Distance, on which beads of the same fiber are allowed to overlay, mimicking bead-bead interaction
-bead_bead_angle_mean = # Mean of an angle between consequtive beads of fiber (in deg.)
-bead_bead_angle_sd = # Standard deviation of an angle between consequtive beads of fiber (in deg.)
+bead_bead_angle_mean = ___ # Mean of an angle between consequtive beads of fiber (in deg.)
+bead_bead_angle_sd = ___ # Standard deviation of an angle between consequtive beads of fiber (in deg.)
 fiber_index = 0 # Starting fiber number in box
 bead_volume = (4/3) * np.pi * sphere_radius**3 # Volume of single bead
-overlay_volume = ((np.pi / 12) * (4 * sphere_radius + sphere_radius) * (2 * sphere_radius - sphere_radius)**2) # Area of bead-bead overlay of two similar fibers
+overlay_volume = ((np.pi / 12) * (4 * sphere_radius + sphere_radius) * (2 * sphere_radius - sphere_radius)**2) # Area of bead-bead overlay
 bead_bead_overlay_ratio = overlay_volume / (bead_volume) # Area of bead-bead overlay as a ratio to bead area
-total_beads = int((box_length * box_width * box_thickness * max_volume_occupied) / (bead_volume - bead_volume * bead_bead_overlay_ratio)) # Total number of beads in box according to its radius and total volume occupied
-total_fibers = int(total_beads / (fiber_length_mean / sphere_radius)) # Total number of fibers in box according to its radius and total volume occupied
+total_beads = int((box_length * box_width * box_thickness * max_volume_occupied) / (bead_volume - bead_volume * bead_bead_overlay_ratio)) # Calculate total number of beads in box
+total_fibers = int(total_beads / (fiber_length_mean / sphere_radius)) # Calculate total number of fibers in box
 ```
 ### Generate normal distribution of fiber length
 > This block of code generates normal distribution of fiber length according to the input values of its mean and standard deviation. Additionally, code ensures that the minimum fiber length is the diameter of one bead. At the very end of the block, array of generated values is sorted from highest to lowest. It allows to efficiently generate longer fibers within the network, allowing to overcome sterical hindrances, which may occur while shorter fibers are already in simulation box.
