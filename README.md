@@ -403,8 +403,10 @@ Fig. 3-5. Randomly generated fiber networks at:
 * 0±5 degrees of bead-bead displacement. 
 
 Fig. 3. X-Y axis view.
+![2_X_Y](https://github.com/vchibrikov/STFGEN/assets/98614057/9c4c81af-4f41-42d1-b239-f370ed95d6a2)
 
 Fig. 4. X-Z axis view.
+![2_X_Z](https://github.com/vchibrikov/STFGEN/assets/98614057/1d222d78-346f-4f9d-820c-0a78f9ceb6ab)
 
 Fig. 5. Y-Z axis view.
 
