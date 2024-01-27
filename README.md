@@ -1,5 +1,5 @@
 # STFGEN.py
-STFGEN (Single-Type Fiber GENerator) is a hardcoded Python script for the generation of random fiber network according to input parameters. Current script allow to adjust input data on fiber structural (number of fibers, its length range, diameter, angle displacement, etc.) and spatial (volume occupation) properties. and provide output data of 3D bead coordinates in .xyz file format, as well as output information on generator run in .txt file format. Current repositorium consists of two Python scripts - STFGEN_O, which allows to generate fiber network with no bead overlays, and STFGEN_N, which do the same but do not handle bead overlay issues.
+STFGEN (Single-Type Fiber GENerator) is a hardcoded Python script for the generation of random fiber network according to input parameters. Current script allow to adjust input data on fiber structural (number of fibers, its length range, diameter, angle displacement, etc.) and spatial (volume occupation) properties. and provide output data of 3D bead coordinates in .xyz file format, as well as output information on generator run in .txt file format. Current repositorium consists of two Python scripts - STFGEN_O.py, which allows to generate fiber network with no bead overlays, and STFGEN_N.py, which do the same but do not handle bead overlay issues.
 
 - Visual Studio Code version: 1.85.1
 - Python version: 3.7.7.
@@ -57,6 +57,7 @@ total_fibers = int(total_beads / (fiber_length_mean / sphere_radius)) # Calculat
 ### Generate normal distribution of fiber length
 > This block of code generates normal distribution of fiber length according to the input values of its mean and standard deviation. Additionally, code ensures that the minimum fiber length is the diameter of one bead. At the very end of the block, array of generated values is sorted from highest to lowest. It allows to efficiently generate longer fibers within the network, allowing to overcome sterical hindrances, which may occur while shorter fibers are already in simulation box.
 ```
+# Generate random values of fiber length according to input means and standard deviation
 random_fiber_length = np.random.normal(0, 1, total_fibers)
 random_fiber_length = random_fiber_length * fiber_length_sd + fiber_length_mean
 random_fiber_length = np.clip(random_fiber_length, 0, None)
@@ -67,7 +68,7 @@ random_fiber_length = np.sort(random_fiber_length)[::-1]
 ```
 ### Initializing arrays to store bead positions and fiber indices
 ```
-# Initialize arrays to store sphere positions and fiber indices
+# Initialize arrays to store bead positions and fiber indices
 x_positions = []
 y_positions = []
 z_positions = []
@@ -76,50 +77,35 @@ fiber_indices = []
 ### Defining function to check overlay of the beads of different values
 > Current script allows overlay of the beads of the same fiber, assuming it as an interbead junction. However, bead overlay of the different fibers if restricted, so that the minimum distance between the beads of different fibers equals to two radii and some cutoff distance. Cutoff distance defines closes distance between the bead edges.
 ```
-# Function to check beads of different fibers overlap
+# Function to check beads of different fibers to overlap
 def check_overlap(pos1, pos2, radius, same_fiber):
     if same_fiber:
-        return False  # Allow overlap for the same fiber
+        return False # Allow overlap for the same fiber
     else:
         distance = np.linalg.norm(pos1 - pos2)
         return distance < radius * 2 + cutoff_distance # Interfiber bead overlay restricted
-        # return distance < 0 # Allow bead overlay
-```
-### While loop for bead and fiber generating up to some volume of the simulation box to be occupied
-```
-# Generate fiber network until desired volume is occupied
-while volume_occupied < max_volume_occupied:
-    print(f'Starting generation for volume occupied: {volume_occupied}')
-```
-### Defining function to check overlay of the beads of different values
-> Current script allows overlay of the beads of the same fiber, assuming it as an interbead junction. However, bead overlay of the different fibers if restricted, so that the minimum distance between the beads of different fibers equals to two radii and some cutoff distance. Cutoff distance defines closes distance between the bead edges. To allow bead overlay, use return command in commented line.
-```
-# Function to check beads of different fibers overlap
-def check_overlap(pos1, pos2, radius, same_fiber):
-    if same_fiber:
-        return False  # Allow overlap for the same fiber
-    else:
-        distance = np.linalg.norm(pos1 - pos2)
-        return distance < radius * 2 + cutoff_distance # Interfiber bead overlay restricted
-        # return distance < 0 # Allow bead overlay
 ```
 ### Starting fiber generation
 > Current block takes the fiber length from a previously generated array, calculates beads number within a fiber, and defines some random position in 3D for the first bead.
 ```
-    # Start generate beads of each fiber within array of fiber length
-    for fiber_length in random_fiber_length:
+# Starting fiber generation
+print(f'Starting generation for volume occupied: {volume_occupied}')
 
-        # Define number of beads in each fiber
-        n_beads = int(fiber_length / sphere_radius) 
+# Start generate beads of each fiber within array of fiber length
+for fiber_length in random_fiber_length:
 
+    # Define number of beads in each fiber
+    n_beads = int(fiber_length / sphere_radius) 
+
+    # Genearting the first bead of the fiber
+    for bead_number in range(1):
+        
         # Generate random position for the first bead in the fiber
         fiber_positions = np.array([[random.randint(sphere_radius, box_length - sphere_radius),
-                                     random.randint(sphere_radius, box_width - sphere_radius),
-                                     random.randint(sphere_radius, box_thickness - sphere_radius)]])
-```
-### Defining bead within the boundaries of simulation box
-> Current block assume first bead should be located within the simulation box.
-```
+                                    random.randint(sphere_radius, box_width - sphere_radius),
+                                    random.randint(sphere_radius, box_thickness - sphere_radius)]])
+        
+        # Generate first bead within the simulation box
         if (fiber_positions < sphere_radius).any() or (fiber_positions > box_length - sphere_radius).any():
 
             # Generate random position for the first bead in the fiber
@@ -133,7 +119,7 @@ def check_overlap(pos1, pos2, radius, same_fiber):
         # Collision detection for the first bead of each fiber
         while any(check_overlap(fiber_positions[0], np.array([x_positions[i], y_positions[i], z_positions[i]]), sphere_radius, fiber_indices[i] == fiber_index) for i in range(len(x_positions))):
             
-            # Generate random position for the first bead in the fiber
+            # Regenerate random position for the first bead in the fiber
             fiber_positions = np.array([[random.randint(sphere_radius, box_length - sphere_radius),
                                         random.randint(sphere_radius, box_width - sphere_radius),
                                         random.randint(sphere_radius, box_thickness - sphere_radius)]])
@@ -149,100 +135,197 @@ def check_overlap(pos1, pos2, radius, same_fiber):
 ### Generating second bead of the fiber
 > In current script, second bead defines directionality, in which fiber will be continuing to generate. Thus, it is randomly done by defining one of 3! possible directions in 3D (east, west, north, south, top, bottom) by calling direction_x, direction_y and direction_z lines. Further on, random_angle_theta and random_angle_phi defines some random bead displacement in spherical coordinates (Figure 1) for chosen direction. Defined theta and phi angles allow to calculate bead offset, which further allows to define bead position.
 ```
-        # Generate second bead of the fiber
-        for bead_number in range(2):  # Change the range to generate two beads
+    # Generate the second bead of each fiber
+    for bead_number in range(2):
 
-            # Generate fiber directionality as a direction in x, y, and z coordinates
-            direction_x = 2 * np.random.randint(2) - 1  # Randomly select -1 or 1
-            direction_y = 2 * np.random.randint(2) - 1  # Randomly select -1 or 1
-            direction_z = 2 * np.random.randint(2) - 1  # Randomly select -1 or 1
+        # While the second bead does not overlay the already generated beads
+        while True:
 
-            # For the second bead, generate some random displacement is spheric coordinates
+            # For the second bead, generate random directionality is spherical coordinates
             random_angle_theta = np.deg2rad(np.random.randint(0, 180))
             random_angle_phi = np.deg2rad(np.random.randint(0, 360))
 
-            # Calculate second bead offset in 3D
+            # Generate fiber directionality in x, y, and z coordinates
+            direction_x = 2 * np.random.randint(2) - 1 # Randomly select -1 or 1
+            direction_y = 2 * np.random.randint(2) - 1 # Randomly select -1 or 1
+            direction_z = 2 * np.random.randint(2) - 1 # Randomly select -1 or 1
+
+            # Calculate bead displacement in spherical coordinates
             x_offset = sphere_radius * np.sin(random_angle_theta) * np.cos(random_angle_phi)
             y_offset = sphere_radius * np.sin(random_angle_theta) * np.sin(random_angle_phi)
             z_offset = sphere_radius * np.cos(random_angle_theta)
 
-            # Define position of the second bead
-            bead_position = np.array([fiber_positions[-1, 0] + direction_x * x_offset,
-                                      fiber_positions[-1, 1] + direction_y * y_offset,
-                                      fiber_positions[-1, 2] + direction_z * z_offset])
-```
-Figure 1. Figure representing the logics of bead generation in terms of spherical coordinate system.
-![Figure 8](https://github.com/vchibrikov/STFGEN/assets/98614057/f0aae5da-48e9-4d87-8651-e2b786281d79)
-### Handling bead overlay
-> Similar to the first bead, while overlay is detected, new position of the second bead is generated by defining some other random directionality, displacement angles, offsets and coordinates.
-```
-            # Collision detection for the second bead
-            while any(check_overlap(bead_position, np.array([x_positions[i], y_positions[i], z_positions[i]]), sphere_radius, fiber_indices[i] == fiber_index) for i in range(len(x_positions))):
+            # Calculate bead coordinates
+            bead_position = np.array([fiber_positions[-1, 0] + x_offset * direction_x,
+                                        fiber_positions[-1, 1] + y_offset * direction_y,
+                                        fiber_positions[-1, 2] + z_offset * direction_z])
+           # Generate second bead within the simulation box
+            if (bead_position[0] < sphere_radius).any() or (bead_position[0] > box_length - sphere_radius).any() or (bead_position[1] < sphere_radius).any() or (bead_position[1] > box_width - sphere_radius).any() or (bead_position[2] < sphere_radius).any() or (bead_position[2] > box_thickness - sphere_radius).any():
 
-                direction_x = 2 * np.random.randint(2) - 1
-                direction_y = 2 * np.random.randint(2) - 1
-                direction_z = 2 * np.random.randint(2) - 1
-
+                # For the second bead, generate random directionality is spheric coordinates
                 random_angle_theta = np.deg2rad(np.random.randint(0, 180))
                 random_angle_phi = np.deg2rad(np.random.randint(0, 360))
 
+                # Generate fiber directionality in x, y, and z coordinates
+                direction_x = 2 * np.random.randint(2) - 1 # Randomly select -1 or 1
+                direction_y = 2 * np.random.randint(2) - 1 # Randomly select -1 or 1
+                direction_z = 2 * np.random.randint(2) - 1 # Randomly select -1 or 1
+
+                # Calculate bead displacement in spherical coordinates
                 x_offset = sphere_radius * np.sin(random_angle_theta) * np.cos(random_angle_phi)
                 y_offset = sphere_radius * np.sin(random_angle_theta) * np.sin(random_angle_phi)
                 z_offset = sphere_radius * np.cos(random_angle_theta)
 
+                # Calculate bead coordinates
                 bead_position = np.array([fiber_positions[-1, 0] + x_offset * direction_x,
-                                          fiber_positions[-1, 1] + y_offset * direction_y,
-                                          fiber_positions[-1, 2] + z_offset * direction_z])
+                                            fiber_positions[-1, 1] + y_offset * direction_y,
+                                            fiber_positions[-1, 2] + z_offset * direction_z])
+```
+Figure 1. Bead generation in spherical coordinate system.
+![Figure 8](https://github.com/vchibrikov/STFGEN/assets/98614057/f0aae5da-48e9-4d87-8651-e2b786281d79)
+### Handling bead overlay
+> Similar to the first bead, while overlay is detected, new position of the second bead is generated by defining some other random directionality, displacement angles, offsets and coordinates.
+```
+                       # Check if the regenerated bead overlaps with any previously generated beads
+            if not any(check_overlap(bead_position, np.array([x_positions[i], y_positions[i], z_positions[i]]), sphere_radius, fiber_indices[i] == fiber_index) for i in range(len(x_positions))):
+                break  # Exit the loop if no overlap
 ```
 Example of the set of randolmy generated set of first and second beads is provided on Figure 2.
-Figure of randomly generated first bead of each fiber at 5% volume occupation of fibers, with beads of the radius of 25 units. X-Y axis view.
+Fig. 2 Randomly generated first and second beads of each fiber at 5% volume occupation of fibers, with beads of the radius of 25 units. X-Y axis view.
 ![Figure 7](https://github.com/vchibrikov/STFGEN/assets/98614057/0086d7cb-f772-470b-b687-f02e4423e7dd)
 ### Technical block - defining atomic symbol, adding position of the second bead to the general list, fiber index, calculating occupied volume and printind respected message
 ```
-            atomic_symbols.append("C")
+	# Append atomic symbol, index and bead positions to the list
+        atomic_symbols.append("C")
+        x_positions.append(bead_position[0])
+        y_positions.append(bead_position[1])
+        z_positions.append(bead_position[2])
+        fiber_indices.append(fiber_index)
+        fiber_positions = np.vstack([fiber_positions, bead_position])
 
-            x_positions.append(bead_position[0])
-            y_positions.append(bead_position[1])
-            z_positions.append(bead_position[2])
+        # Calculate the volume occupied by the generated beads
+        volume_occupied = (bead_volume * len(x_positions)) - ((bead_volume * bead_bead_overlay_ratio) * (len(x_positions) - fiber_index))
 
-            fiber_indices.append(fiber_index)
-
-            fiber_positions = np.vstack([fiber_positions, bead_position])
-
-            # Calculate the volume occupied by the generated beads
-            volume_occupied = (bead_volume * len(x_positions)) - ((bead_volume * bead_bead_overlay_ratio) * (len(x_positions) - fiber_index))
-
-            print(f'Added bead {str(bead_number + 1).zfill(5)} of {n_beads} for fiber {fiber_index} of {len(random_fiber_length)}. Volume occupied: {round(volume_occupied * 100 / (box_length * box_thickness * box_width), 5)}%')
+	# Print terminal statement on code processing
+        print(f'Added bead {str(bead_number + 1).zfill(5)} of {n_beads} for fiber {fiber_index} of {len(random_fiber_length)}. Volume occupied: {round(volume_occupied * 100 / (box_length * box_thickness * box_width), 5)}%')
 ```
 ### Generating beads from the third till fiber end
 > Current block of code allows for further bead generation in predefined direction. For each bead, displacement is defined by some random value of angle displacements random_angle_theta and random_angle_phi, which correspond to the one, defined earlier, yet modified by some random value of angle displacements random_angle_theta_modifier and random_angle_phi_modifier.
 ```
-        # For each fiber, generate beads from the third to the end of the fiber length
-        for bead_number in range(3, round((n_beads + 1) * 1), 1):
+   # For each fiber, generate beads from the third to the end of the fiber length
+    for bead_number in range(3, round(n_beads + 1), 1):
 
-            for _ in range(1):
+	# If there is no bead overlay
+        overlay_detected = False
+        while True:
 
-                # For other beads, generate random displacement is spheric coordinates
-                random_angle_theta_modifier = np.deg2rad(np.random.randint(-bead_bead_angle_sd, bead_bead_angle_sd))
-                random_angle_phi_modifier = np.deg2rad(np.random.randint(-bead_bead_angle_sd, bead_bead_angle_sd))
-
+	    # Define directionality modifier in spherical coordinates
+            random_angle_theta_modifier = np.deg2rad(np.random.uniform(-bead_bead_angle_sd, (bead_bead_angle_sd + 1)))
+            random_angle_phi_modifier = np.deg2rad(np.random.uniform(-bead_bead_angle_sd, (bead_bead_angle_sd + 1)))
             random_angle_theta += random_angle_theta_modifier
             random_angle_phi += random_angle_phi_modifier
 
-            # Convert spherical coordinates to Cartesian coordinates with random signs
+            # Calculate bead displacement in spherical coordinates
             x_offset = sphere_radius * np.sin(random_angle_theta) * np.cos(random_angle_phi)
             y_offset = sphere_radius * np.sin(random_angle_theta) * np.sin(random_angle_phi)
             z_offset = sphere_radius * np.cos(random_angle_theta)
 
-            # Define bead position according to the previous bead(s), their directionality and calculated displacement
+            # Calculate bead coordinates
             bead_position = np.array([fiber_positions[-1, 0] + x_offset * direction_x,
-                                    fiber_positions[-1, 1] + y_offset * direction_y,
-                                    fiber_positions[-1, 2] + z_offset * direction_z])
+                                        fiber_positions[-1, 1] + y_offset * direction_y,
+                                        fiber_positions[-1, 2] + z_offset * direction_z])
+            
+            # Generate beads within the simulation box
+            if (bead_position[0] < sphere_radius).any() or (bead_position[0] > box_length - sphere_radius).any() or (bead_position[1] < sphere_radius).any() or (bead_position[1] > box_width - sphere_radius).any() or (bead_position[2] < sphere_radius).any() or (bead_position[2] > box_thickness - sphere_radius).any():
+
+	        # Define directionality modifier in spherical coordinates
+                random_angle_theta_modifier = np.deg2rad(np.random.uniform(-bead_bead_angle_sd, (bead_bead_angle_sd + 1)))
+                random_angle_phi_modifier = np.deg2rad(np.random.uniform(-bead_bead_angle_sd, (bead_bead_angle_sd + 1)))
+                random_angle_theta += random_angle_theta_modifier
+                random_angle_phi += random_angle_phi_modifier
+
+                # Calculate bead displacement in spherical coordinates
+                x_offset = sphere_radius * np.sin(random_angle_theta) * np.cos(random_angle_phi)
+                y_offset = sphere_radius * np.sin(random_angle_theta) * np.sin(random_angle_phi)
+                z_offset = sphere_radius * np.cos(random_angle_theta)
+
+                # Calculate bead coordinates
+                bead_position = np.array([fiber_positions[-1, 0] + x_offset * direction_x,
+                                            fiber_positions[-1, 1] + y_offset * direction_y,
+                                            fiber_positions[-1, 2] + z_offset * direction_z])
 ```
+### Handling bead overlay
+> While generated bead overlay existing one, some new positions are generated for the beads from the third till the last one
+```
+            # Check if the regenerated bead overlaps with any previously generated beads
+            if not any(check_overlap(bead_position, np.array([x_positions[i], y_positions[i], z_positions[i]]), sphere_radius, fiber_indices[i] == fiber_index) for i in range(len(x_positions))):
+                break  # Exit the loop if no overlap
 
+            # While overlay is detected
+            overlay_detected = True
 
+        if overlay_detected:
 
+            # Identify indices of beads in the current fiber
+            fiber_indices_to_delete = [i for i, idx in enumerate(fiber_indices) if idx == fiber_index]
 
+            # Ensure there are more than two beads in the fiber before attempting to delete
+            if len(fiber_indices_to_delete) > 2:
+
+                # Delete beads with the same fiber index, starting from the third bead
+                del_indices = fiber_indices_to_delete[2:]
+
+                # Check if the array size is greater than the index to delete
+                if len(fiber_positions) > max(del_indices):
+
+                    # Delete corresponding elements using NumPy
+                    x_positions = np.delete(x_positions, del_indices)
+                    y_positions = np.delete(y_positions, del_indices)
+                    z_positions = np.delete(z_positions, del_indices)
+                    fiber_indices = np.delete(fiber_indices, del_indices)
+                    fiber_positions = np.delete(fiber_positions, del_indices, axis=0)
+```
+### Technical block - defining atomic symbol, adding position of the second bead to the general list, fiber index, calculating occupied volume and printind respected message
+```
+        # Append the bead position to the global position arrays
+        x_positions.append(bead_position[0])
+        y_positions.append(bead_position[1])
+        z_positions.append(bead_position[2])
+
+        # Append the fiber index to the fiber_indices array
+        fiber_indices.append(fiber_index)
+
+        # Append the bead position to the fiber_positions array
+        fiber_positions = np.vstack([fiber_positions, bead_position])
+
+        # Calculate the volume occupied by the generated beads
+        volume_occupied = (bead_volume * len(x_positions)) - ((bead_volume * bead_bead_overlay_ratio) * (len(x_positions) - fiber_index))
+
+	# Print terminal statement on code processing
+        print(f'Added bead {str(bead_number).zfill(5)} of {n_beads} for fiber {fiber_index} of {len(random_fiber_length)}. Volume occupied: {round(volume_occupied * 100 / (box_length * box_thickness * box_width), 5)}%')
+```
+### Plot output structure in Python (optionally)
+```
+### Technical block - defining atomic symbol, adding position of the second bead to the general list, fiber index, calculating occupied volume and printind respected message
+```
+        # Append the bead position to the global position arrays
+        x_positions.append(bead_position[0])
+        y_positions.append(bead_position[1])
+        z_positions.append(bead_position[2])
+
+        # Append the fiber index to the fiber_indices array
+        fiber_indices.append(fiber_index)
+
+        # Append the bead position to the fiber_positions array
+        fiber_positions = np.vstack([fiber_positions, bead_position])
+
+        # Calculate the volume occupied by the generated beads
+        volume_occupied = (bead_volume * len(x_positions)) - ((bead_volume * bead_bead_overlay_ratio) * (len(x_positions) - fiber_index))
+
+	# Print terminal statement on code processing
+        print(f'Added bead {str(bead_number).zfill(5)} of {n_beads} for fiber {fiber_index} of {len(random_fiber_length)}. Volume occupied: {round(volume_occupied * 100 / (box_length * box_thickness * box_width), 5)}%')
+```
+```
 
 
 
